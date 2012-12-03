@@ -1,7 +1,7 @@
 package Mojolicious::Plugin::AutoRoute;
 use Mojo::Base 'Mojolicious::Plugin';
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 sub register {
   my ($self, $app, $conf) = @_;
@@ -16,20 +16,38 @@ sub register {
   my $max_depth = $conf->{max_depth} || 15;
   
   # Route(root)
-  $r->route('/')->name('index');
+  $r->route('/')->to(format => 'html', handler => 'ep', cb => sub {
+    my $c = shift;
+    
+    my $tmpl_path = '/index';
+    my $stash = $c->stash;
+    $stash->{template} = $tmpl_path;
+      
+    if (-f $c->app->renderer->template_path($stash) || '') {
+        $c->render($tmpl_path)
+    }
+    else { $c->render_not_found }
+  });
   
   # Routes
   my $path_long = '';
   for (my $depth = 0; $depth < $max_depth; $depth++) {
     my $path = $path_long . "/:path$depth";
     my $current_depth = $depth;
-    $r->route("$path")->to(cb => sub {
+    $r->route("$path")->to(format => 'html', handler => 'ep', cb => sub {
       my $c = shift;
       my $tmpl_path = '';
       for(my $k = 0; $k < $current_depth + 1; $k++) {
         $tmpl_path .= '/' . $c->stash("path$k");
       }
-      $c->render($tmpl_path);
+      
+      my $stash = $c->stash;
+      $stash->{template} = $tmpl_path;
+      
+      if (-f $c->app->renderer->template_path($stash) || '') {
+        $c->render($tmpl_path)
+      }
+      else { $c->render_not_found }
     });
     $path_long = $path;
   }
