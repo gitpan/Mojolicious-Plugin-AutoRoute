@@ -6,10 +6,10 @@ MYMETA.json
 MYMETA.yml
 README
 t/basic.t
-t/templates/foo.html.ep
-t/templates/foo/bar.html.ep
-t/templates/foo/bar/baz.html.ep
-t/templates/index.html.ep
+t/templates/auto/foo.html.ep
+t/templates/auto/foo/bar.html.ep
+t/templates/auto/foo/bar/baz.html.ep
+t/templates/auto/index.html.ep
 t/test.pl
 META.yml                                 Module YAML meta-data (added by MakeMaker)
 META.json                                Module JSON meta-data (added by MakeMaker)
