@@ -10,6 +10,9 @@ t/templates/auto/foo.html.ep
 t/templates/auto/foo/bar.html.ep
 t/templates/auto/foo/bar/baz.html.ep
 t/templates/auto/index.html.ep
+t/templates/myauto/foo.html.ep
+t/templates/myauto/myauto/foo.html.ep
+t/templates2/auto/foo2.html.ep
 t/test.pl
 META.yml                                 Module YAML meta-data (added by MakeMaker)
 META.json                                Module JSON meta-data (added by MakeMaker)

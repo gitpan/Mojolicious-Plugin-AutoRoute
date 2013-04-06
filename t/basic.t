@@ -1,24 +1,86 @@
-use Mojo::Base -strict;
-
 use Test::More 'no_plan';
-
-use Mojolicious::Lite;
+use strict;
+use warnings;
 use Test::Mojo;
-use FindBin;
 
-plugin 'AutoRoute';
+# Basic test
+{
+  package Test1;
+  use Mojolicious::Lite;
 
-my $t = Test::Mojo->new;
+  push @{app->renderer->paths}, app->home->rel_file('templates2');
 
-# Get
-$t->get_ok('/')->content_like(qr#\Qindex.html.ep#);
-$t->get_ok('/foo')->content_like(qr#\Qfoo.html.ep#);
-$t->get_ok('/foo/bar')->content_like(qr#\Qfoo/bar.html.ep#);
-$t->get_ok('/foo/bar/baz')->content_like(qr#\Qfoo/bar/baz.html.ep#);
+  get '/normal' => sub { shift->render(text => 'normal') };
+  get '/aa..bb' => sub { shift->render(text => 'aa..bb') };
 
-# Post
-$t->post_ok('/')->content_like(qr#\Qindex.html.ep#);
-$t->post_ok('/foo')->content_like(qr#\Qfoo.html.ep#);
-$t->post_ok('/foo/bar')->content_like(qr#\Qfoo/bar.html.ep#);
-$t->post_ok('/foo/bar/baz')->content_like(qr#\Qfoo/bar/baz.html.ep#);
+  plugin 'AutoRoute';
+  
+  my $app = Test1->new;
+  my $t = Test::Mojo->new($app);
 
+  # User created route
+  $t->get_ok('/normal')->content_like(qr/normal/);
+  $t->get_ok('/aa..bb')->content_like(qr/aa\.\.bb/);
+
+  # Get
+  $t->get_ok('/')->content_like(qr#\Qindex.html.ep#);
+  $t->get_ok('/foo')->content_like(qr#\Qfoo.html.ep#);
+  $t->get_ok('/foo/bar')->content_like(qr#\Qfoo/bar.html.ep#);
+  $t->get_ok('/foo/bar/baz')->content_like(qr#\Qfoo/bar/baz.html.ep#);
+  $t->get_ok('/foo2')->content_like(qr#\Qfoo2.html.ep#);
+
+  # Post
+  $t->post_ok('/')->content_like(qr#\Qindex.html.ep#);
+  $t->post_ok('/foo')->content_like(qr#\Qfoo.html.ep#);
+  $t->post_ok('/foo/bar')->content_like(qr#\Qfoo/bar.html.ep#);
+  $t->post_ok('/foo/bar/baz')->content_like(qr#\Qfoo/bar/baz.html.ep#);
+  $t->post_ok('/foo2')->content_like(qr#\Qfoo2.html.ep#);
+
+  # Not found
+  $t->get_ok('/foo3')->status_is('404');
+
+  # Forbidden(protect from directory traversal);
+  $t->get_ok('/foo/../foo')->status_is('500');
+}
+
+# top_dir option
+{
+  package Test2;
+  use Mojolicious::Lite;
+
+  plugin 'AutoRoute', top_dir => 'myauto';
+  
+  my $app = Test2->new;
+  my $t = Test::Mojo->new($app);
+
+  # User created route
+  $t->get_ok('/foo')->content_like(qr#myauto/foo\.html\.ep#);
+}
+
+# top_dir option with slash
+{
+  package Test3;
+  use Mojolicious::Lite;
+
+  plugin 'AutoRoute', top_dir => '/myauto/';
+  
+  my $app = Test3->new;
+  my $t = Test::Mojo->new($app);
+
+  # User created route
+  $t->get_ok('/foo')->content_like(qr#myauto/foo\.html\.ep#);
+}
+
+# top_dir option deep directory
+{
+  package Test4;
+  use Mojolicious::Lite;
+
+  plugin 'AutoRoute', top_dir => 'myauto/myauto';
+  
+  my $app = Test4->new;
+  my $t = Test::Mojo->new($app);
+
+  # User created route
+  $t->get_ok('/foo')->content_like(qr#myauto/myauto/foo\.html\.ep#);
+}
