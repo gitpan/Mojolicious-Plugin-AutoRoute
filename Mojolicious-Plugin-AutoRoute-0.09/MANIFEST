@@ -51,5 +51,3 @@ t/templates3/auto/not.html.ep
 t/templates3/exc.html.ep
 t/test2.pl
 t/test3.pl
-META.yml                                 Module YAML meta-data (added by MakeMaker)
-META.json                                Module JSON meta-data (added by MakeMaker)
